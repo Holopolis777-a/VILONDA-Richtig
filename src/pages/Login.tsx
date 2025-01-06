@@ -59,7 +59,7 @@ export default function Login() {
       color: 'bg-primary-400',
     },
     {
-      role: 'user' as const,
+      role: 'member' as const,
       title: 'Mitglied',
       description: 'Durchsuchen und leasen Sie Fahrzeuge',
       icon: User,

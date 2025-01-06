@@ -1,0 +1,1 @@
+import{j as e}from"./index-xKrTDA7N.js";const r={sm:"h-4 w-4",md:"h-8 w-8",lg:"h-12 w-12"};function i({size:s="md"}){return e.jsx("div",{className:"flex items-center justify-center h-full",children:e.jsx("div",{className:`animate-spin rounded-full border-b-2 border-gray-900 ${r[s]}`})})}export{i as L};

@@ -3,8 +3,8 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { Slider } from '../ui/Slider';
 import { Euro, Building2, MapPin, BatteryCharging, Calculator, FileText } from 'lucide-react';
-import { calculateSalarySacrifice } from '../../utils/salary';
-import { SalaryCalculationResult } from './SalaryCalculationResult';
+import { calculateSalarySacrifice } from '../../utils/salaryCalculator';
+import { NewSalaryCalculationResult } from './NewSalaryCalculationResult';
 import { Button } from '../ui/Button';
 import { SalaryStatementModal } from './salary-statement/SalaryStatementModal';
 
@@ -120,7 +120,7 @@ export function SalaryDetails({
           </div>
         </div>
 
-        <SalaryCalculationResult calculation={calculation} />
+        <NewSalaryCalculationResult calculation={calculation} />
 
         <Button 
           onClick={() => setShowStatement(true)} 

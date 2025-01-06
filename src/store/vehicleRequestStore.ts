@@ -1,90 +1,124 @@
 import { create } from 'zustand';
-
-interface VehicleRequest {
-  id: string;
-  userId: string;
-  vehicle: {
-    make: string;
-    model: string;
-    type: string;
-    image: string;
-  };
-  startDate: Date;
-  endDate: Date;
-  status: 'pending' | 'approved' | 'rejected';
-  bookingReference?: string;
-}
+import { VehicleRequest } from '../types/vehicleRequest';
+import { Vehicle } from '../types/vehicle';
+import { User } from '../types/auth';
+import { useAuthStore } from './authStore';
+import { useVehicleStore } from './vehicleStore';
 
 interface VehicleRequestStore {
   requests: VehicleRequest[];
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
-  fetchRequests: (userId: string) => Promise<void>;
-  cancelRequest: (requestId: string) => Promise<void>;
+  createRequest: (vehicleId: string, requestDetails: VehicleRequest['requestDetails']) => Promise<void>;
+  fetchUserRequests: (userId: string) => Promise<void>;
+  fetchAllRequests: () => Promise<void>;
+  updateRequestStatus: (requestId: string, status: VehicleRequest['status']) => Promise<void>;
 }
 
-export const useVehicleRequestStore = create<VehicleRequestStore>((set) => ({
+// Mock data store
+let mockRequests: VehicleRequest[] = [];
+
+export const useVehicleRequestStore = create<VehicleRequestStore>((set, get) => ({
   requests: [],
-  loading: false,
+  isLoading: false,
   error: null,
 
-  fetchRequests: async (userId) => {
-    set({ loading: true });
+  createRequest: async (vehicleId: string, requestDetails: VehicleRequest['requestDetails']) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      set({ isLoading: true, error: null });
       
-      // Mock data
-      const mockRequests: VehicleRequest[] = [
-        {
-          id: '1',
-          userId,
-          vehicle: {
-            make: 'BMW',
-            model: '3er',
-            type: 'Limousine',
-            image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800',
-          },
-          startDate: new Date('2024-04-01'),
-          endDate: new Date('2024-04-15'),
-          status: 'pending',
-          bookingReference: 'REQ-2024-001',
-        },
-        {
-          id: '2',
-          userId,
-          vehicle: {
-            make: 'Tesla',
-            model: 'Model 3',
-            type: 'Limousine',
-            image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800',
-          },
-          startDate: new Date('2024-05-01'),
-          endDate: new Date('2024-05-31'),
-          status: 'approved',
-          bookingReference: 'REQ-2024-002',
-        },
-      ];
+      const { user } = useAuthStore.getState();
+      if (!user) throw new Error('User not authenticated');
 
-      set({ requests: mockRequests, loading: false });
+      // Use the actual vehicle data passed to the form
+      const vehicle = useVehicleStore.getState().vehicles.find((v: Vehicle) => v.id === vehicleId);
+      if (!vehicle) throw new Error('Vehicle not found');
+
+      const newRequest: VehicleRequest = {
+        id: Math.random().toString(36).substr(2, 9),
+        vehicleId,
+        userId: user.id,
+        vehicle,
+        user,
+        status: 'pending',
+        createdAt: new Date(),
+        termsAccepted: true,
+        requestDetails,
+      };
+
+      // Add to mock data store
+      mockRequests = [...mockRequests, newRequest];
+      console.log('Added new request to mock store:', newRequest);
+      console.log('Current mock requests:', mockRequests);
+
+      // Update the store state
+      set(state => ({
+        requests: [...state.requests, newRequest],
+        isLoading: false,
+      }));
     } catch (error) {
-      set({ error: 'Failed to fetch requests', loading: false });
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  cancelRequest: async (requestId) => {
-    set({ loading: true });
+  fetchUserRequests: async (userId: string) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      set({ isLoading: true, error: null });
+      console.log('Fetching requests for user:', userId);
+      console.log('All mock requests:', mockRequests);
+
+      // Filter mock requests for the user
+      const userRequests = mockRequests.filter(request => request.userId === userId);
+      console.log('Filtered user requests:', userRequests);
       
-      set((state) => ({
-        requests: state.requests.filter((request) => request.id !== requestId),
-        loading: false,
+      set({ 
+        requests: userRequests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  fetchAllRequests: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      console.log('Fetching all requests');
+      console.log('All mock requests:', mockRequests);
+
+      // Filter pending requests for admin
+      const pendingRequests = mockRequests.filter(request => request.status === 'pending');
+      console.log('Filtered pending requests:', pendingRequests);
+      
+      set({ 
+        requests: pendingRequests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  updateRequestStatus: async (requestId: string, status: VehicleRequest['status']) => {
+    try {
+      set({ isLoading: true, error: null });
+      console.log('Updating request status:', requestId, status);
+
+      // Update mock request status
+      mockRequests = mockRequests.map(request =>
+        request.id === requestId ? { ...request, status } : request
+      );
+      console.log('Updated mock requests:', mockRequests);
+
+      // Update the store state
+      set(state => ({
+        requests: state.requests.map(request =>
+          request.id === requestId ? { ...request, status } : request
+        ),
+        isLoading: false,
       }));
     } catch (error) {
-      set({ error: 'Failed to cancel request', loading: false });
-      throw error;
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 }));

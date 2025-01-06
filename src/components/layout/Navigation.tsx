@@ -4,11 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { NavHeader } from './navigation/NavHeader';
 import { NavSection } from './navigation/NavSection';
 import { LogoutButton } from './navigation/LogoutButton';
-import { adminNav } from './navigation/configs/adminNav';
-import { brokerNav } from './navigation/configs/brokerNav';
-import { employerNav } from './navigation/configs/employerNav';
-import { employeeNav } from './navigation/configs/employeeNav';
-import { salaryEmployeeNav } from './navigation/configs/salaryEmployeeNav';
+import { adminNav, brokerNav, employerNav, employeeNav, salaryEmployeeNav, memberNav } from './navigation/configs';
 import { Logo } from '../common/Logo';
 
 export default function Navigation() {
@@ -27,6 +23,8 @@ export default function Navigation() {
         return employeeNav;
       case 'salary-employee':
         return salaryEmployeeNav;
+      case 'member':
+        return memberNav;
       default:
         return [];
     }

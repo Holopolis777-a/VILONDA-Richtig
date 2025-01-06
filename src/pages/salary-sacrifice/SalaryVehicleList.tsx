@@ -6,10 +6,14 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { PageTitle } from './components/PageTitle';
 import { Button } from '../../components/ui/Button';
 import { Plus } from 'lucide-react';
-import { LegalDisclaimer } from '../../components/salary-sacrifice/LegalDisclaimer';
+import { SalaryInfoBox } from '../../components/salary-sacrifice/SalaryInfoBox';
 
 export default function SalaryVehicleList() {
-  const { vehicles, loading } = useSalarySacrificeStore();
+  const { vehicles, loading, fetchVehicles } = useSalarySacrificeStore();
+
+  React.useEffect(() => {
+    fetchVehicles();
+  }, [fetchVehicles]);
   const [isAddModalOpen, setAddModalOpen] = React.useState(false);
   const { canManageVehicles, isAdmin } = usePermissions();
 
@@ -29,6 +33,8 @@ export default function SalaryVehicleList() {
         <VehicleGrid vehicles={vehicles} loading={loading} />
       </div>
 
+      <SalaryInfoBox />
+
       {canManageVehicles && (
         <VehicleFormDialog
           isOpen={isAddModalOpen}
@@ -37,7 +43,6 @@ export default function SalaryVehicleList() {
           store={useSalarySacrificeStore()}
         />
       )}
-      <LegalDisclaimer />
     </div>
   );
 }

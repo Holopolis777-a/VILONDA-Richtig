@@ -1,18 +1,22 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useVehicleStore } from '../../store/vehicleStore';
+import { useAuthStore } from '../../store/authStore';
 import { VehicleGallery } from './details/VehicleGallery';
 import { VehicleSpecs } from './details/VehicleSpecs';
 import { VehicleFeatures } from './details/VehicleFeatures';
 import { VehicleServices } from './details/VehicleServices';
 import { SubscriptionConfigurator } from '../subscription/SubscriptionConfigurator';
+import { VehicleRequestDialog } from './dialogs/VehicleRequestDialog';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { Button } from '../common/Button';
 
 export function VehicleDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { vehicles } = useVehicleStore();
+  const { user } = useAuthStore();
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = React.useState(false);
   const vehicle = vehicles.find((v) => v.id === id);
 
   if (!vehicle) {
@@ -37,7 +41,10 @@ export function VehicleDetails() {
         <div className="space-y-8">
           <VehicleGallery images={vehicle.images} />
           <VehicleSpecs vehicle={vehicle} />
-          <VehicleFeatures features={vehicle.features} />
+          <VehicleFeatures 
+            features={vehicle.features}
+            standardEquipment={vehicle.standardEquipment}
+          />
           <VehicleServices services={vehicle.services} />
         </div>
 
@@ -49,8 +56,29 @@ export function VehicleDetails() {
             <p className="text-lg text-gray-600 mt-2">{vehicle.type}</p>
           </div>
 
-          <SubscriptionConfigurator
+          {user?.role === 'member' ? (
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-xl font-semibold mb-4">Fahrzeug anfragen</h2>
+              <p className="text-gray-600 mb-6">
+                Konfigurieren Sie Ihre Anfrage und senden Sie diese zur Prüfung an uns.
+              </p>
+              <Button
+                onClick={() => setIsRequestDialogOpen(true)}
+                fullWidth
+              >
+                Jetzt anfragen
+              </Button>
+            </div>
+          ) : (
+            <SubscriptionConfigurator
+              vehicle={vehicle}
+            />
+          )}
+
+          <VehicleRequestDialog
             vehicle={vehicle}
+            isOpen={isRequestDialogOpen}
+            onClose={() => setIsRequestDialogOpen(false)}
           />
         </div>
       </div>

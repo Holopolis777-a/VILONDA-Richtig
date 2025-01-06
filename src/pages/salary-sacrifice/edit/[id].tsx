@@ -46,11 +46,23 @@ export default function EditSalaryVehicle() {
 
   const handleSubmit = async (data: any) => {
     try {
-      await updateVehicle(id!, data);
+      // Only include fields that have actually changed
+      const changes = Object.entries(data).reduce((acc: any, [key, value]) => {
+        if (vehicle[key as keyof typeof vehicle] !== value) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      console.log('Updating with changes:', changes);
+      
+      await updateVehicle(id!, changes);
       toast.success('Gehaltsumwandlungs-Fahrzeug erfolgreich aktualisiert');
       navigate('/salary-sacrifice');
     } catch (error) {
-      toast.error('Fehler beim Aktualisieren des Gehaltsumwandlungs-Fahrzeugs');
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      toast.error(errorMessage);
+      console.error('Error updating vehicle:', error);
     }
   };
 
@@ -76,6 +88,7 @@ export default function EditSalaryVehicle() {
           initialData={vehicle}
           onSubmit={handleSubmit}
           onCancel={() => navigate('/salary-sacrifice')}
+          type="salary"
         />
       </div>
     </div>

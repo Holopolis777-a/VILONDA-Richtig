@@ -11,7 +11,8 @@ const Brokers = React.lazy(() => import('./pages/brokers/BrokerList'));
 const AdminMembers = React.lazy(() => import('./pages/admin/members'));
 const Members = React.lazy(() => import('./pages/members/MemberList'));
 const MemberOrders = React.lazy(() => import('./pages/orders/MemberOrders'));
-const NewOrders = React.lazy(() => import('./pages/orders/NewOrders'));
+const AdminVehicleRequests = React.lazy(() => import('./pages/admin/vehicle-requests'));
+const MemberRequests = React.lazy(() => import('./pages/member/requests'));
 const Orders = React.lazy(() => import('./pages/orders/OrderList'));
 const News = React.lazy(() => import('./pages/news/NewsManagement'));
 const FAQ = React.lazy(() => import('./pages/faq'));
@@ -41,6 +42,7 @@ const EmployeeRequests = React.lazy(() => import('./pages/employee/Requests'));
 
 // Salary Employee Pages
 const SalaryEmployeeDashboard = React.lazy(() => import('./pages/salary-employee/Dashboard'));
+const MemberDashboard = React.lazy(() => import('./pages/member/dashboard'));
 
 export default function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -66,21 +68,40 @@ export default function App() {
           <Routes>
             {/* Common Routes */}
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/vehicles/*" element={<Vehicles />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/tickets" element={<TicketsPage />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/salary-sacrifice/*" element={<SalarySacrifice />} />
+            {/* Member Routes */}
+            {user?.role === 'member' && (
+              <>
+                <Route path="/member/dashboard" element={<MemberDashboard />} />
+                <Route path="/member/vehicles/*" element={<Vehicles />} />
+                <Route path="/member/requests" element={<MemberRequests />} />
+                <Route path="/member/faq" element={<FAQ />} />
+                <Route path="/member/tickets" element={<TicketsPage />} />
+                <Route path="/member/messages" element={<Messages />} />
+                <Route path="/member/notifications" element={<Notifications />} />
+                <Route path="/" element={<Navigate to="/member/dashboard" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/member/dashboard" replace />} />
+              </>
+            )}
+
+            {/* Non-member routes */}
+            {user?.role !== 'member' && (
+              <>
+                <Route path="/vehicles/*" element={<Vehicles />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/companies" element={<Companies />} />
+                <Route path="/tickets" element={<TicketsPage />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/salary-sacrifice/*" element={<SalarySacrifice />} />
+              </>
+            )}
 
             {/* Admin Routes */}
             {user?.role === 'admin' && (
               <>
                 <Route path="/brokers" element={<Brokers />} />
                 <Route path="/admin/members" element={<AdminMembers />} />
-                <Route path="/new-orders" element={<NewOrders />} />
-                <Route path="/orders" element={<Orders />} />
+                <Route path="/admin/vehicle-requests" element={<AdminVehicleRequests />} />
                 <Route path="/news" element={<News />} />
                 <Route path="/admin/settings/*" element={<AdminSettings />} />
               </>

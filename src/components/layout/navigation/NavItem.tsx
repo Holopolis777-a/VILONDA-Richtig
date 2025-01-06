@@ -18,11 +18,11 @@ export function NavItem({ path, label, icon: Icon, exact }: NavItemProps) {
       return location.pathname === path;
     }
     // Special handling for vehicle and salary sacrifice paths
-    if (path === '/vehicles') {
-      return location.pathname.startsWith('/vehicles') && !location.pathname.startsWith('/vehicles/pool');
+    if (path === '/member/vehicles') {
+      return location.pathname.startsWith('/member/vehicles') && !location.pathname.startsWith('/member/vehicles/pool');
     }
-    if (path === '/salary-sacrifice') {
-      return location.pathname.startsWith('/salary-sacrifice');
+    if (path === '/member/salary-sacrifice') {
+      return location.pathname.startsWith('/member/salary-sacrifice');
     }
     return location.pathname.startsWith(path);
   }, [location.pathname, path, exact]);

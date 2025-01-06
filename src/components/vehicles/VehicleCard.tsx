@@ -4,6 +4,7 @@ import { Car, Edit2, Power, Fuel, Settings } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ElectricRangeBadge } from './electric/ElectricRangeBadge';
 import { usePermissions } from '../../hooks/usePermissions';
+import { toast } from 'react-hot-toast';
 import type { Vehicle } from '../../types/vehicle';
 
 interface VehicleCardProps {
@@ -30,9 +31,24 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
   const monthlyRate = Object.values(vehicle.leasingRates).sort((a, b) => a - b)[0];
   const isElectric = vehicle.fuelType === 'elektro';
 
-  const handleViewDetails = () => {
-    const basePath = getBasePath();
-    navigate(`${basePath}/${vehicle.id}`);
+  const [isNavigating, setIsNavigating] = React.useState(false);
+
+  const handleViewDetails = async () => {
+    try {
+      setIsNavigating(true);
+      const basePath = getBasePath();
+      console.log('Navigating to:', `${basePath}${isSalaryVehicle ? '/details' : ''}/${vehicle.id}`);
+      if (isSalaryVehicle) {
+        navigate(`${basePath}/details/${vehicle.id}`);
+      } else {
+        navigate(`${basePath}/${vehicle.id}`);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      toast.error('Fehler beim Laden des Fahrzeugs');
+    } finally {
+      setIsNavigating(false);
+    }
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -76,12 +92,12 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-gray-600">
             <Fuel className="w-4 h-4 mr-2" />
-            <span>{vehicle.fuelType}</span>
+            <span>{vehicle.fuelType.toUpperCase()}</span>
           </div>
           
           <div className="flex items-center text-gray-600">
             <Settings className="w-4 h-4 mr-2" />
-            <span>{vehicle.transmission}</span>
+            <span>{vehicle.transmission.toUpperCase()}</span>
           </div>
           
           <div className="flex items-center text-gray-600">
@@ -96,24 +112,28 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         
         {/* Price and action section */}
         <div className="mt-4">
-          <p className="text-sm text-gray-500">Ab</p>
           <p className="text-xl font-semibold">
-            €{isSalaryVehicle ? `${vehicle.monthlyStartingRate}*` : `${monthlyRate}/Monat`}
+            Ab {isSalaryVehicle 
+              ? `${vehicle.monthlyFrom || 'undefined'},-€* im Monat`
+              : `${monthlyRate},-€ im Monat`
+            }
           </p>
         </div>
         
         <Button 
           onClick={handleViewDetails}
           className="mt-4 w-full"
+          disabled={isNavigating}
         >
-          Fahrzeug anzeigen
+          {isNavigating ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Laden...
+            </div>
+          ) : (
+            'Fahrzeug anzeigen'
+          )}
         </Button>
-
-        {isSalaryVehicle && (
-          <p className="mt-4 text-xs text-gray-500 leading-tight">
-            *Rate pro Vilonda-Gehaltsumwandlung. Die tatsächliche Ersparnis hängt von den individuellen steuerlichen Gegebenheiten ab.
-          </p>
-        )}
       </div>
     </div>
   );

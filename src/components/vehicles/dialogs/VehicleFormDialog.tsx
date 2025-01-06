@@ -8,7 +8,7 @@ import type { Vehicle } from '../../../types/vehicle';
 interface VehicleFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  type?: 'regular' | 'pool';
+  type?: 'regular' | 'pool' | 'salary';
   store: {
     addVehicle: (vehicle: Omit<Vehicle, 'id'>) => Promise<void>;
   };
@@ -86,7 +86,13 @@ export function VehicleFormDialog({
           ...(data.oneTimeCosts ?? {})
         }
       });
-      toast.success(`${type === 'pool' ? 'Pool-Fahrzeug' : 'Fahrzeug'} erfolgreich angelegt`);
+      toast.success(`${
+        type === 'pool' 
+          ? 'Pool-Fahrzeug' 
+          : type === 'salary' 
+            ? 'Gehaltsumwandlungs-Fahrzeug'
+            : 'Fahrzeug'
+      } erfolgreich angelegt`);
       onClose();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
@@ -107,7 +113,12 @@ export function VehicleFormDialog({
         <div className="relative bg-white rounded-xl max-w-4xl w-full p-6 overflow-y-auto max-h-[90vh]">
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-xl font-semibold">
-              {type === 'pool' ? 'Neues Pool-Fahrzeug anlegen' : 'Neues Fahrzeug anlegen'}
+              {type === 'pool' 
+              ? 'Neues Pool-Fahrzeug anlegen' 
+              : type === 'salary'
+                ? 'Neues Gehaltsumwandlungs-Fahrzeug anlegen'
+                : 'Neues Fahrzeug anlegen'
+            }
             </Dialog.Title>
             <button
               onClick={onClose}

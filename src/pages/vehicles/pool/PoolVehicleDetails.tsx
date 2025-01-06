@@ -68,7 +68,8 @@ export default function PoolVehicleDetails() {
           />
           <VehicleFeatures 
             features={vehicle.features} 
-            customFeatures={vehicle.customFeatures} 
+            customFeatures={vehicle.customFeatures}
+            standardEquipment={vehicle.standardEquipment}
           />
           <InclusiveServices 
             services={vehicle.services}

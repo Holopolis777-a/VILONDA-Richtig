@@ -1,6 +1,42 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import type { Vehicle, VehicleFormData } from '../types/vehicle';
+import type { Vehicle, VehicleFormData, VehicleColor, VehicleServices } from '../types/vehicle';
+import { useAuthStore } from './authStore';
+
+// Define the database response type with snake_case properties
+interface DatabaseVehicle {
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  type: string;
+  status: string;
+  color: string;
+  mileage: number;
+  standard_equipment: string;
+  electric_range?: number;
+  engine_size?: number;
+  equipment_variant: string;
+  fuel_type: string;
+  gross_list_price: number;
+  custom_equipment: string[];
+  custom_features: { [key: string]: string };
+  available_colors: VehicleColor[];
+  service_prices: { [key: string]: number };
+  leasing_rates: { [key: string]: number };
+  one_time_costs: {
+    registration: number;
+    homeDelivery: number;
+    transfer: number;
+  };
+  monthly_starting_rate?: number;
+  images: string[];
+  features: string[];
+  services: VehicleServices;
+  delivery_time: number;
+  power: number;
+  transmission: string;
+}
 
 interface SalarySacrificeState {
   vehicles: Vehicle[];
@@ -88,8 +124,39 @@ const mockVehicles: Vehicle[] = [
   },
 ];
 
-export const useSalarySacrificeStore = create<SalarySacrificeState>((set) => ({
-  vehicles: mockVehicles,
+// Convert database response to Vehicle type
+const convertDatabaseVehicle = (dbVehicle: DatabaseVehicle): Vehicle => ({
+  id: dbVehicle.id,
+  make: dbVehicle.make,
+  model: dbVehicle.model,
+  year: dbVehicle.year,
+  type: dbVehicle.type,
+  status: dbVehicle.status,
+  color: dbVehicle.color,
+  mileage: dbVehicle.mileage,
+  standardEquipment: dbVehicle.standard_equipment,
+  electricRange: dbVehicle.electric_range,
+  engineSize: dbVehicle.engine_size,
+  equipmentVariant: dbVehicle.equipment_variant,
+  fuelType: dbVehicle.fuel_type,
+  grossListPrice: dbVehicle.gross_list_price,
+  customEquipment: dbVehicle.custom_equipment,
+  customFeatures: dbVehicle.custom_features,
+  availableColors: dbVehicle.available_colors,
+  servicePrices: dbVehicle.service_prices,
+  leasingRates: dbVehicle.leasing_rates,
+  oneTimeCosts: dbVehicle.one_time_costs,
+  monthlyStartingRate: dbVehicle.monthly_starting_rate,
+  images: dbVehicle.images,
+  features: dbVehicle.features,
+  services: dbVehicle.services,
+  deliveryTime: dbVehicle.delivery_time,
+  power: dbVehicle.power,
+  transmission: dbVehicle.transmission,
+});
+
+export const useSalarySacrificeStore = create<SalarySacrificeState>((set, get) => ({
+  vehicles: mockVehicles, // Initialize with mock data
   filters: {},
   loading: false,
   error: null,
@@ -99,10 +166,33 @@ export const useSalarySacrificeStore = create<SalarySacrificeState>((set) => ({
     try {
       const { data, error } = await supabase
         .from('salary_vehicles')
-        .select('*')
+        .select('*');
 
       if (error) throw error;
-      set({ vehicles: data || [], loading: false });
+
+      // Transform snake_case to camelCase
+      const transformedData = (data || []).map(vehicle => ({
+        ...vehicle,
+        standardEquipment: vehicle.standard_equipment,
+        electricRange: vehicle.electric_range,
+        engineSize: vehicle.engine_size,
+        equipmentVariant: vehicle.equipment_variant,
+        fuelType: vehicle.fuel_type,
+        grossListPrice: vehicle.gross_list_price,
+        customEquipment: vehicle.custom_equipment,
+        customFeatures: vehicle.custom_features,
+        availableColors: vehicle.available_colors,
+        servicePrices: vehicle.service_prices,
+        leasingRates: vehicle.leasing_rates,
+        oneTimeCosts: vehicle.one_time_costs,
+        monthlyStartingRate: vehicle.monthly_starting_rate,
+        monthlyFrom: vehicle.monthly_from,
+        createdAt: vehicle.created_at,
+        updatedAt: vehicle.updated_at,
+        createdBy: vehicle.created_by
+      }));
+
+      set({ vehicles: transformedData, loading: false, error: null });
     } catch (error) {
       console.error('Error fetching salary vehicles:', error);
       set({ error: 'Failed to fetch vehicles', loading: false });
@@ -112,12 +202,13 @@ export const useSalarySacrificeStore = create<SalarySacrificeState>((set) => ({
   addVehicle: async (vehicleData) => {
     set({ loading: true });
     try {
+      const { data: userData } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('salary_vehicles')
         .insert([{
           ...vehicleData,
           status: 'available',
-          created_by: supabase.auth.getUser()?.id
+          created_by: userData.user?.id
         }])
         .select()
         .single();
@@ -139,7 +230,62 @@ export const useSalarySacrificeStore = create<SalarySacrificeState>((set) => ({
   updateVehicle: async (id, updates) => {
     set({ loading: true });
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Get current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      
+      if (!session?.user || session.user.user_metadata.role !== 'admin') {
+        throw new Error('Keine Berechtigung zum Aktualisieren des Fahrzeugs');
+      }
+
+      // Transform camelCase to snake_case for database
+      const dbUpdates: Record<string, any> = {};
+      
+      // Format fields according to database types
+      if ('standardEquipment' in updates) dbUpdates.standard_equipment = String(updates.standardEquipment || '');
+      if ('electricRange' in updates) dbUpdates.electric_range = Number(updates.electricRange) || null;
+      if ('engineSize' in updates) dbUpdates.engine_size = Number(updates.engineSize) || null;
+      if ('equipmentVariant' in updates) dbUpdates.equipment_variant = String(updates.equipmentVariant || '');
+      if ('fuelType' in updates) dbUpdates.fuel_type = String(updates.fuelType || '');
+      if ('grossListPrice' in updates) dbUpdates.gross_list_price = Number(updates.grossListPrice) || 0;
+      if ('customEquipment' in updates) dbUpdates.custom_equipment = JSON.stringify(updates.customEquipment || []);
+      if ('customFeatures' in updates) dbUpdates.custom_features = JSON.stringify(updates.customFeatures || {});
+      if ('availableColors' in updates) dbUpdates.available_colors = JSON.stringify(updates.availableColors || []);
+      if ('servicePrices' in updates) dbUpdates.service_prices = JSON.stringify(updates.servicePrices || {});
+      if ('leasingRates' in updates) dbUpdates.leasing_rates = JSON.stringify(updates.leasingRates || {});
+      if ('oneTimeCosts' in updates) dbUpdates.one_time_costs = JSON.stringify(updates.oneTimeCosts || {});
+      if ('monthlyStartingRate' in updates) dbUpdates.monthly_starting_rate = Number(updates.monthlyStartingRate) || null;
+      if ('monthlyFrom' in updates) dbUpdates.monthly_from = Number(updates.monthlyFrom) || null;
+      
+      // Handle basic fields that don't need transformation
+      Object.entries(updates).forEach(([key, value]) => {
+        if (!key.match(/[A-Z]/)) { // If key doesn't contain uppercase letters
+          if (typeof value === 'number') {
+            dbUpdates[key] = Number(value) || 0;
+          } else if (typeof value === 'string') {
+            dbUpdates[key] = String(value || '');
+          } else if (typeof value === 'boolean') {
+            dbUpdates[key] = Boolean(value);
+          }
+        }
+      });
+
+      console.log('Updating salary vehicle with:', dbUpdates);
+
+      const { error } = await supabase
+        .from('salary_vehicles')
+        .update(dbUpdates)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Supabase error:', error);
+        if (error.code === 'PGRST116') {
+          throw new Error('Keine Berechtigung zum Aktualisieren des Fahrzeugs');
+        }
+        throw new Error(`Fehler beim Aktualisieren: ${error.message}`);
+      }
+
+      // Update local state
       set((state) => ({
         vehicles: state.vehicles.map((v) =>
           v.id === id ? { ...v, ...updates } : v
@@ -147,20 +293,30 @@ export const useSalarySacrificeStore = create<SalarySacrificeState>((set) => ({
         loading: false,
       }));
     } catch (error) {
+      console.error('Error updating vehicle:', error);
       set({ error: 'Failed to update vehicle', loading: false });
+      throw error;
     }
   },
 
   deleteVehicle: async (id) => {
     set({ loading: true });
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { error } = await supabase
+        .from('salary_vehicles')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
       set((state) => ({
         vehicles: state.vehicles.filter((v) => v.id !== id),
         loading: false,
       }));
     } catch (error) {
+      console.error('Error deleting vehicle:', error);
       set({ error: 'Failed to delete vehicle', loading: false });
+      throw error;
     }
   },
 }));

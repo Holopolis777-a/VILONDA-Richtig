@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'react-hot-toast';
 import { VehicleBasicInfo } from './sections/VehicleBasicInfo';
 import { VehicleTechnicalInfo } from './sections/VehicleTechnicalInfo';
 import { VehiclePriceMatrix } from './sections/VehiclePriceMatrix';
@@ -8,13 +9,14 @@ import { VehicleImages } from './sections/VehicleImages';
 import { ColorManagement } from './sections/ColorManagement';
 import { ActionButtons } from './sections/ActionButtons';
 import { OneTimeCostsSection } from './sections/OneTimeCostsSection';
+import { MonthlyPriceSection } from './sections/MonthlyPriceSection';
 import type { Vehicle, VehicleFormData } from '../../../types/vehicle';
 
 interface VehicleFormProps {
   initialData?: Vehicle;
   onSubmit: (data: Partial<Vehicle>) => Promise<void>;
   onCancel: () => void;
-  type?: 'regular' | 'pool';
+  type?: 'regular' | 'pool' | 'salary';
 }
 
 export function VehicleForm({ 
@@ -74,6 +76,8 @@ export function VehicleForm({
       transfer: 0,
     },
     grossListPrice: initialData?.grossListPrice || 0,
+    monthlyFrom: initialData?.monthlyFrom || 0,
+    status: initialData?.status || 'available',
   });
 
   const handleChange = React.useCallback((updates: Partial<VehicleFormData>) => {
@@ -125,6 +129,13 @@ export function VehicleForm({
         onChange={handleChange}
       />
 
+      {type === 'salary' && (
+        <MonthlyPriceSection
+          monthlyFrom={formData.monthlyFrom}
+          onChange={(monthlyFrom) => handleChange({ monthlyFrom })}
+        />
+      )}
+
       <VehiclePriceMatrix 
         data={formData} 
         onChange={handleChange} 
@@ -133,7 +144,6 @@ export function VehicleForm({
       <VehicleFeatures 
         data={formData} 
         onChange={handleChange} 
-        standardEquipment={formData.standardEquipment}
       />
 
       <VehicleServices 

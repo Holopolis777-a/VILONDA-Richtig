@@ -1,0 +1,1 @@
+import{j as n,t as s}from"./index-xKrTDA7N.js";const r={success:"bg-green-100 text-green-800",warning:"bg-yellow-100 text-yellow-800",error:"bg-red-100 text-red-800",info:"bg-blue-100 text-blue-800"};function o({children:e,variant:t="info"}){return n.jsx("span",{className:s("px-2 inline-flex text-xs leading-5 font-semibold rounded-full",r[t]),children:e})}export{o as B};

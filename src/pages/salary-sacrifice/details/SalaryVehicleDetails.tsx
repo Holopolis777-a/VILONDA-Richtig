@@ -12,13 +12,63 @@ import { LeaseConfiguration } from '../../../components/salary-sacrifice/LeaseCo
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { toast } from 'react-hot-toast';
+import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import type { VehicleColor } from '../../../types/vehicle';
 
-export default function SalaryVehicleDetails() {
+function SalaryVehicleDetailsContent() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { vehicles, updateVehicle } = useSalarySacrificeStore();
-  const vehicle = React.useMemo(() => vehicles.find((v) => v.id === id), [vehicles, id]);
+  const { vehicles, updateVehicle, fetchVehicles } = useSalarySacrificeStore();
+  
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  // Load vehicles on mount and when id changes
+  React.useEffect(() => {
+    const loadVehicle = async () => {
+      console.log('SalaryVehicleDetails mounted');
+      console.log('ID from params:', id);
+      console.log('Initial vehicles:', vehicles);
+
+      try {
+        setIsLoading(true);
+        await fetchVehicles();
+      } catch (error) {
+        console.error('Error fetching vehicles:', error);
+        toast.error('Fehler beim Laden des Fahrzeugs');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVehicle();
+  }, [id, fetchVehicles]); // Include fetchVehicles to ensure latest version
+
+  // Update loading state when vehicles change
+  React.useEffect(() => {
+    console.log('Vehicles updated:', vehicles);
+    if (vehicles.length > 0) {
+      setIsLoading(false);
+    }
+  }, [vehicles]);
+
+  const vehicle = React.useMemo(() => {
+    console.log('Finding vehicle with id:', id);
+    console.log('Current vehicles:', vehicles);
+    const found = vehicles.find((v) => v.id === id);
+    console.log('Found vehicle:', found);
+    return found;
+  }, [vehicles, id]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mb-4"></div>
+          <p className="text-gray-500">Fahrzeug wird geladen...</p>
+        </div>
+      </div>
+    );
+  }
 
   // State für Konfiguration
   const [selectedColor, setSelectedColor] = React.useState<string | undefined>(vehicle?.color);
@@ -27,7 +77,9 @@ export default function SalaryVehicleDetails() {
   const [distanceToWork, setDistanceToWork] = React.useState(20);
   const [canChargeAtWork, setCanChargeAtWork] = React.useState(false);
   const [currentMonthlyRate, setCurrentMonthlyRate] = React.useState(() => {
-    return vehicle ? Math.min(...Object.values(vehicle.leasingRates)) : 0;
+    if (!vehicle?.leasingRates) return 0;
+    const rates = Object.values(vehicle.leasingRates);
+    return rates.length > 0 ? Math.min(...rates) : 0;
   });
 
   if (!vehicle) {
@@ -82,7 +134,8 @@ export default function SalaryVehicleDetails() {
           />
           <VehicleFeatures 
             features={vehicle.features} 
-            customFeatures={vehicle.customFeatures} 
+            customFeatures={vehicle.customFeatures}
+            standardEquipment={vehicle.standardEquipment}
           />
           <InclusiveServices 
             services={vehicle.services}
@@ -113,10 +166,18 @@ export default function SalaryVehicleDetails() {
             canChargeAtWork={canChargeAtWork}
             onCanChargeAtWorkChange={setCanChargeAtWork}
             monthlyRate={currentMonthlyRate}
-            listPrice={vehicle.grossListPrice}
+            listPrice={vehicle.grossListPrice || 0}
           />
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SalaryVehicleDetails() {
+  return (
+    <ErrorBoundary>
+      <SalaryVehicleDetailsContent />
+    </ErrorBoundary>
   );
 }

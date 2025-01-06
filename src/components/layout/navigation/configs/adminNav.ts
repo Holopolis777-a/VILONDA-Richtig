@@ -31,7 +31,7 @@ export const adminNav: NavSection[] = [
       { path: '/vehicles', label: 'Fahrzeuge', icon: Car },
       { path: '/vehicles/pool', label: 'Pool-Fahrzeuge', icon: Building2 },
       { path: '/salary-sacrifice', label: 'Gehaltsumwandlung', icon: Wallet },
-      { path: '/new-orders', label: 'Neue Bestellungen', icon: ShoppingCart },
+      { path: '/admin/vehicle-requests', label: 'Neue Bestellungen', icon: ShoppingCart },
       { path: '/orders', label: 'Bestellungen', icon: FileText },
     ],
   },

@@ -22,6 +22,7 @@ const mockPoolVehicles: Vehicle[] = [
     type: 'limousine',
     status: 'available',
     color: 'Obsidianschwarz',
+    standardEquipment: 'Klimaautomatik\nLED Scheinwerfer\nNavigationssystem\nParktronic\nRückfahrkamera',
     mileage: 0,
     fuelType: 'elektro',
     transmission: 'automatik',
@@ -94,7 +95,29 @@ export const usePoolVehicleStore = create<PoolVehicleState>((set) => ({
         .select('*')
 
       if (error) throw error;
-      set({ vehicles: data || [], loading: false });
+
+      // Transform snake_case to camelCase
+      const transformedData = (data || []).map(vehicle => ({
+        ...vehicle,
+        standardEquipment: vehicle.standard_equipment,
+        electricRange: vehicle.electric_range,
+        engineSize: vehicle.engine_size,
+        equipmentVariant: vehicle.equipment_variant,
+        fuelType: vehicle.fuel_type,
+        grossListPrice: vehicle.gross_list_price,
+        customEquipment: vehicle.custom_equipment,
+        customFeatures: vehicle.custom_features,
+        availableColors: vehicle.available_colors,
+        servicePrices: vehicle.service_prices,
+        leasingRates: vehicle.leasing_rates,
+        oneTimeCosts: vehicle.one_time_costs,
+        monthlyStartingRate: vehicle.monthly_starting_rate,
+        createdAt: vehicle.created_at,
+        updatedAt: vehicle.updated_at,
+        createdBy: vehicle.created_by
+      }));
+
+      set({ vehicles: transformedData, loading: false });
     } catch (error) {
       console.error('Error fetching pool vehicles:', error);
       set({ error: 'Failed to fetch pool vehicles', loading: false });
@@ -109,7 +132,7 @@ export const usePoolVehicleStore = create<PoolVehicleState>((set) => ({
         .insert([{
           ...vehicle,
           status: 'available',
-          created_by: supabase.auth.getUser()?.id
+          created_by: (await supabase.auth.getUser()).data.user?.id
         }])
         .select()
         .single();

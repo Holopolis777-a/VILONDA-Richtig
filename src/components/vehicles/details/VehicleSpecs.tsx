@@ -24,8 +24,8 @@ export function VehicleSpecs({ vehicle }: VehicleSpecsProps) {
       label: 'Kilometerstand',
       value: `${vehicle.mileage.toLocaleString()} km`,
     },
-    { icon: Fuel, label: 'Kraftstoff', value: vehicle.fuelType },
-    { icon: Settings, label: 'Getriebe', value: vehicle.transmission },
+    { icon: Fuel, label: 'Kraftstoff', value: vehicle.fuelType.toUpperCase() },
+    { icon: Settings, label: 'Getriebe', value: vehicle.transmission.toUpperCase() },
     { icon: Power, label: 'Leistung', value: `${vehicle.power} PS` },
     ...(isElectric && vehicle.electricRange ? [
       { 
