@@ -4,37 +4,58 @@ import type { AuthState, UserRole } from '../types/auth';
 
 export const useAuthStore = create<AuthState>((set) => {
   // Initialize auth state
+  // Helper function to get user data with profile
+  const getUserWithProfile = async (sessionUser: any) => {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role, first_name, last_name')
+      .eq('id', sessionUser.id)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      return null;
+    }
+
+    if (!profile) {
+      console.error('No profile found for user');
+      return null;
+    }
+
+    return {
+      id: sessionUser.id,
+      email: sessionUser.email!,
+      name: profile.first_name && profile.last_name 
+        ? `${profile.first_name} ${profile.last_name}`
+        : 'User',
+      role: profile.role,
+      createdAt: new Date(sessionUser.created_at)
+    };
+  };
+
   const initAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      const role = session.user.user_metadata.role as UserRole;
-      set({
-        user: {
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata.name || 'User',
-          role: role,
-          createdAt: new Date(session.user.created_at)
-        },
-        isAuthenticated: true
-      });
+      const userData = await getUserWithProfile(session.user);
+      if (userData) {
+        set({
+          user: userData,
+          isAuthenticated: true
+        });
+      }
     }
   };
 
   // Set up auth state listener
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
-      const role = session.user.user_metadata.role as UserRole;
-      set({
-        user: {
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata.name || 'User',
-          role: role,
-          createdAt: new Date(session.user.created_at)
-        },
-        isAuthenticated: true
-      });
+      const userData = await getUserWithProfile(session.user);
+      if (userData) {
+        set({
+          user: userData,
+          isAuthenticated: true
+        });
+      }
     } else if (event === 'SIGNED_OUT') {
       set({ user: null, isAuthenticated: false, profileImage: null });
     }
@@ -48,7 +69,7 @@ export const useAuthStore = create<AuthState>((set) => {
     isAuthenticated: false,
     profileImage: null,
 
-    login: async (email: string, password: string, role: UserRole) => {
+    login: async (email: string, password: string) => {
       try {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
@@ -58,19 +79,23 @@ export const useAuthStore = create<AuthState>((set) => {
         if (error) throw error;
 
         if (user) {
-          // Update user metadata with role
-          const { error: updateError } = await supabase.auth.updateUser({
-            data: { role }
-          });
+          // Fetch user profile to get role
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role, first_name, last_name')
+            .eq('id', user.id)
+            .single();
 
-          if (updateError) throw updateError;
+          if (profileError) throw profileError;
 
           set({ 
             user: {
               id: user.id,
               email: user.email!,
-              name: user.user_metadata.name || 'User',
-              role: role,
+              name: profile.first_name && profile.last_name 
+                ? `${profile.first_name} ${profile.last_name}`
+                : 'User',
+              role: profile.role,
               createdAt: new Date(user.created_at)
             },
             isAuthenticated: true 
