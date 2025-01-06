@@ -6,7 +6,7 @@ DO $$ BEGIN
   CREATE TYPE user_role AS ENUM (
     'admin',
     'broker',
-    'user',
+    'member',
     'employer',
     'employee',
     'salary-employee'
@@ -18,7 +18,7 @@ END $$;
 -- Create profiles table
 CREATE TABLE IF NOT EXISTS profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  role user_role NOT NULL DEFAULT 'user',
+  role user_role NOT NULL DEFAULT 'member',
   first_name text,
   last_name text,
   avatar_url text,

@@ -14,16 +14,20 @@ export function NavItem({ path, label, icon: Icon, exact }: NavItemProps) {
   const location = useLocation();
   
   const isActive = React.useMemo(() => {
+    // For exact matches, only highlight if paths match exactly
     if (exact) {
       return location.pathname === path;
     }
-    // Special handling for vehicle and salary sacrifice paths
+    
+    // For /member/vehicles, don't highlight when in pool section
     if (path === '/member/vehicles') {
-      return location.pathname.startsWith('/member/vehicles') && !location.pathname.startsWith('/member/vehicles/pool');
+      return location.pathname === path || (
+        location.pathname.startsWith(path) && 
+        !location.pathname.includes('/pool')
+      );
     }
-    if (path === '/member/salary-sacrifice') {
-      return location.pathname.startsWith('/member/salary-sacrifice');
-    }
+    
+    // For all other paths, use startsWith for nested routes
     return location.pathname.startsWith(path);
   }, [location.pathname, path, exact]);
 

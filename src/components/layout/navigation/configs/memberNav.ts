@@ -6,7 +6,7 @@ export const memberNav: NavSection[] = [
     title: 'Übersicht',
     items: [
       { path: '/member/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/member/vehicles', label: 'Fahrzeuge', icon: Car },
+      { path: '/member/vehicles', label: 'Fahrzeuge', icon: Car, exact: true },
       { path: '/member/requests', label: 'Meine Anfragen', icon: FileText },
     ],
   },
