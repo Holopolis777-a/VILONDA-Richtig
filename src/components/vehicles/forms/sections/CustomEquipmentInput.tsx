@@ -1,7 +1,6 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
-import { Input } from '../../../ui/Input';
-import { Button } from '../../../ui/Button';
+import { Input, Button } from '../../../../components/core';
 
 interface CustomEquipmentInputProps {
   customEquipment: string[];
@@ -32,25 +31,26 @@ export function CustomEquipmentInput({ customEquipment = [], onChange }: CustomE
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Zusätzliche Ausstattung
-        </label>
         <div className="flex gap-2">
           <Input
+            label="Zusätzliche Ausstattung"
             value={newEquipment}
             onChange={(e) => setNewEquipment(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="z.B. Panoramadach, Head-up Display"
             className="flex-1"
           />
-          <Button
-            type="button"
-            onClick={handleAdd}
-            disabled={!newEquipment.trim()}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Hinzufügen
-          </Button>
+          <div className="flex items-end">
+            <Button
+              type="button"
+              onClick={handleAdd}
+              disabled={!newEquipment.trim()}
+              variant="secondary"
+              startIcon={<Plus className="w-4 h-4" />}
+            >
+              Hinzufügen
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -59,15 +59,16 @@ export function CustomEquipmentInput({ customEquipment = [], onChange }: CustomE
           {customEquipment.map((item, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100"
             >
               <span className="text-sm text-gray-700">{item}</span>
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
-                className="p-1 text-gray-400 hover:text-gray-600"
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <X className="w-4 h-4" />
+                <span className="sr-only">Entfernen</span>
               </button>
             </div>
           ))}

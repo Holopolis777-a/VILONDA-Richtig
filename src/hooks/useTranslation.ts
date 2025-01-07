@@ -1,10 +1,22 @@
 import { translations } from '../i18n/translations';
 
-export function useTranslation() {
-  // In a real app, you might want to add language switching functionality here
+type TranslationFunction = (key: string) => string;
+
+interface UseTranslationReturn {
+  t: TranslationFunction;
+}
+
+export function useTranslation(): UseTranslationReturn {
+  const translate: TranslationFunction = (key: string) => {
+    try {
+      const result = key.split('.').reduce<any>((obj, k) => obj?.[k], translations);
+      return result || key;
+    } catch {
+      return key;
+    }
+  };
+
   return {
-    t: (path: string) => {
-      return path.split('.').reduce((obj, key) => obj[key], translations as any) || path;
-    },
+    t: translate,
   };
 }

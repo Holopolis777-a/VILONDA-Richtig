@@ -1,5 +1,7 @@
 import React from 'react';
 import { PiggyBank } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/core';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface SavingsDisplayProps {
   taxSavings: number;
@@ -8,40 +10,68 @@ interface SavingsDisplayProps {
   monthlySavings: number;
 }
 
+interface SavingsItemProps {
+  label: string;
+  value: number;
+  highlight?: boolean;
+}
+
+function SavingsItem({ label, value, highlight }: SavingsItemProps) {
+  return (
+    <div>
+      <p className="text-sm text-gray-600">{label}</p>
+      <p className={`text-lg font-semibold ${highlight ? 'text-emerald-600' : ''}`}>
+        {value > 0 ? '+' : ''}{value.toFixed(2)}€
+      </p>
+    </div>
+  );
+}
+
 export function SavingsDisplay({ 
   taxSavings, 
   socialInsuranceSavings, 
   effectiveMonthlyCost,
   monthlySavings 
 }: SavingsDisplayProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       {/* Main cost display */}
-      <div className="bg-emerald-600 text-white p-6 rounded-lg shadow-lg">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold">Effektive monatliche Kosten</h3>
+      <Card variant="success" className="p-6">
+        <CardHeader>
+          <CardTitle>{t('Effektive monatliche Kosten')}</CardTitle>
           <PiggyBank className="w-8 h-8" />
-        </div>
-        <p className="text-3xl font-bold">{effectiveMonthlyCost.toFixed(2)}€</p>
-      </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-3xl font-bold">{effectiveMonthlyCost.toFixed(2)}€</p>
+        </CardContent>
+      </Card>
 
       {/* Savings breakdown */}
-      <div className="bg-white p-4 rounded-lg shadow space-y-4">
-        <div>
-          <p className="text-sm text-gray-600">Monatliche Steuerersparnis</p>
-          <p className="text-lg font-semibold text-green-600">+{taxSavings.toFixed(2)}€</p>
-        </div>
-        
-        <div>
-          <p className="text-sm text-gray-600">Sozialversicherungsersparnis</p>
-          <p className="text-lg font-semibold text-green-600">+{socialInsuranceSavings.toFixed(2)}€</p>
-        </div>
-        
-        <div>
-          <p className="text-sm text-gray-600">Ihre monatliche Ersparnis</p>
-          <p className="text-lg font-semibold text-green-600">{monthlySavings.toFixed(2)}€</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent>
+          <div className="space-y-4">
+            <SavingsItem 
+              label={t('Monatliche Steuerersparnis')}
+              value={taxSavings}
+              highlight
+            />
+            
+            <SavingsItem 
+              label={t('Sozialversicherungsersparnis')}
+              value={socialInsuranceSavings}
+              highlight
+            />
+            
+            <SavingsItem 
+              label={t('Ihre monatliche Ersparnis')}
+              value={monthlySavings}
+              highlight
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

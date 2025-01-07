@@ -15,6 +15,12 @@ export interface VehicleServices {
   damageManagement: boolean;
 }
 
+export interface OneTimeCosts {
+  registration: number;
+  homeDelivery: number;
+  transfer: number;
+}
+
 export type VehicleFormData = Omit<Vehicle, 'id'>;
 
 export interface Vehicle {
@@ -44,10 +50,7 @@ export interface Vehicle {
   availableColors: VehicleColor[];
   servicePrices: { [key: string]: number };
   leasingRates: { [key: string]: number };
-  oneTimeCosts: {
-    registration: number;
-    homeDelivery: number;
-    transfer: number;
-  };
+  oneTimeCosts: OneTimeCosts;
   grossListPrice: number;
+  vin?: string; // Vehicle Identification Number
 }

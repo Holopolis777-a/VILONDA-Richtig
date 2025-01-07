@@ -1,4 +1,13 @@
-export interface SocialSecurityData {
+export interface SalaryCalculationResult {
+  netSalaryWithoutLease: number;
+  netSalaryWithLease: number;
+  effectiveCosts: number;
+  taxSavings: number;
+  socialSecuritySavings: number;
+  monthlyBenefit: number;
+}
+
+export interface SocialSecurity {
   pension: number;
   health: number;
   care: number;
@@ -10,34 +19,27 @@ export interface MonetaryBenefit {
   commute: number;
 }
 
-export interface SalaryWithoutLease {
+export interface SalaryCalculationBase {
   gross: number;
   incomeTax: number;
   churchTax: number;
-  socialSecurity: SocialSecurityData;
+  socialSecurity: SocialSecurity;
   net: number;
 }
 
-export interface SalaryWithLease {
-  gross: number;
+export interface SalaryCalculationWithLease extends SalaryCalculationBase {
   leaseAmount: number;
   monetaryBenefit: MonetaryBenefit;
   chargingBenefit: number;
-  incomeTax: number;
-  churchTax: number;
-  socialSecurity: SocialSecurityData;
-  net: number;
-}
-
-export interface SavingsData {
-  employee: number;
-  employer: number;
 }
 
 export interface SalaryCalculations {
-  withoutLease: SalaryWithoutLease;
-  withLease: SalaryWithLease;
-  savings: SavingsData;
+  withoutLease: SalaryCalculationBase;
+  withLease: SalaryCalculationWithLease;
+  savings: {
+    employee: number;
+    employer: number;
+  };
 }
 
 export interface SalaryStatementData {
@@ -47,4 +49,17 @@ export interface SalaryStatementData {
   monthlyRate: number;
   churchTax: boolean;
   calculations: SalaryCalculations;
+}
+
+export interface SalaryDetailsProps {
+  grossSalary: number;
+  onGrossSalaryChange: (value: number) => void;
+  taxClass: string;
+  onTaxClassChange: (value: string) => void;
+  distanceToWork: number;
+  onDistanceChange: (value: number) => void;
+  canChargeAtWork: boolean;
+  onCanChargeAtWorkChange: (value: boolean) => void;
+  monthlyRate: number;
+  listPrice: number;
 }

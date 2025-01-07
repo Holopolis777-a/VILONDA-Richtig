@@ -1,6 +1,6 @@
 import React from 'react';
 import { Battery } from 'lucide-react';
-import { Input } from '../../ui/Input';
+import { Input } from '../../../components/core';
 
 interface ElectricRangeInputProps {
   value: number;
@@ -18,9 +18,8 @@ export function ElectricRangeInput({ value, onChange, required }: ElectricRangeI
         value={value || ''}
         onChange={(e) => onChange(Number(e.target.value))}
         required={required}
-        className="pl-10"
+        startIcon={<Battery className="text-gray-400 w-5 h-5" />}
       />
-      <Battery className="absolute left-3 top-9 text-gray-400 w-5 h-5" />
     </div>
   );
 }

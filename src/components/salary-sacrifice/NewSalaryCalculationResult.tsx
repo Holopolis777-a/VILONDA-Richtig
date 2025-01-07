@@ -1,20 +1,12 @@
 import React from 'react';
 import { SavingsDisplay } from './SavingsDisplay';
+import type { SalaryCalculationResult } from '../../types/salary';
 
-interface SalaryCalculationResult {
-  netSalaryWithoutLease: number;
-  netSalaryWithLease: number;
-  effectiveCosts: number;
-  taxSavings: number;
-  socialSecuritySavings: number;
-  monthlyBenefit: number;
-}
-
-interface SalaryCalculationResultProps {
+interface NewSalaryCalculationResultProps {
   calculation: SalaryCalculationResult;
 }
 
-export function NewSalaryCalculationResult({ calculation }: SalaryCalculationResultProps) {
+export function NewSalaryCalculationResult({ calculation }: NewSalaryCalculationResultProps) {
   return (
     <SavingsDisplay
       taxSavings={calculation.taxSavings}

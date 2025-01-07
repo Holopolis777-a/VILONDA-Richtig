@@ -1,6 +1,5 @@
 import React from 'react';
-import { Input } from '../../../ui/Input';
-import { Select } from '../../../ui/Select';
+import { Input, Select, type Option } from '../../../../components/core';
 import { ElectricRangeInput } from '../../electric/ElectricRangeInput';
 import type { Vehicle } from '../../../../types/vehicle';
 
@@ -9,11 +8,23 @@ interface VehicleTechnicalInfoProps {
   onChange: (data: Partial<Vehicle>) => void;
 }
 
+const fuelTypeOptions: Option[] = [
+  { value: 'benzin', label: 'Benzin' },
+  { value: 'diesel', label: 'Diesel' },
+  { value: 'elektro', label: 'Elektro' },
+  { value: 'hybrid', label: 'Hybrid' }
+];
+
+const transmissionOptions: Option[] = [
+  { value: 'automatik', label: 'Automatik' },
+  { value: 'manuell', label: 'Manuell' }
+];
+
 export function VehicleTechnicalInfo({ data, onChange }: VehicleTechnicalInfoProps) {
   const isElectric = data.fuelType === 'elektro';
 
-  const handleFuelTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newFuelType = e.target.value;
+  const handleFuelTypeChange = (value: string | number) => {
+    const newFuelType = value.toString();
     onChange({ 
       fuelType: newFuelType,
       // Only clear electric range when switching from electric to non-electric
@@ -29,23 +40,17 @@ export function VehicleTechnicalInfo({ data, onChange }: VehicleTechnicalInfoPro
         <Select
           label="Kraftstoffart *"
           value={data.fuelType}
+          options={fuelTypeOptions}
           onChange={handleFuelTypeChange}
           required
-        >
-          <option value="benzin">Benzin</option>
-          <option value="diesel">Diesel</option>
-          <option value="elektro">Elektro</option>
-          <option value="hybrid">Hybrid</option>
-        </Select>
+        />
         <Select
           label="Getriebe *"
           value={data.transmission}
-          onChange={(e) => onChange({ transmission: e.target.value })}
+          options={transmissionOptions}
+          onChange={(value) => onChange({ transmission: value.toString() })}
           required
-        >
-          <option value="automatik">Automatik</option>
-          <option value="manuell">Manuell</option>
-        </Select>
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Checkbox } from '../../../ui/Checkbox';
+import { Checkbox, Textarea } from '../../../../components/core';
 import { CustomEquipmentInput } from './CustomEquipmentInput';
 import type { VehicleFormData } from '../../../../types/vehicle';
 
@@ -41,22 +41,15 @@ export function VehicleFeatures({ data, onChange }: VehicleFeaturesProps) {
       <h3 className="text-lg font-medium">Ausstattungsmerkmale</h3>
       
       {/* Standard Equipment */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Serienausstattung *
-        </label>
-        <textarea
-          value={data.standardEquipment || ''}
-          onChange={handleStandardEquipmentChange}
-          rows={6}
-          placeholder="Geben Sie hier die Serienausstattung ein (z.B. Klimaanlage, Zentralverriegelung, etc.)"
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
-          required
-        />
-        <p className="text-sm text-gray-500">
-          Bitte geben Sie die Serienausstattung zeilenweise ein
-        </p>
-      </div>
+      <Textarea
+        label="Serienausstattung *"
+        value={data.standardEquipment || ''}
+        onChange={handleStandardEquipmentChange}
+        rows={6}
+        placeholder="Geben Sie hier die Serienausstattung ein (z.B. Klimaanlage, Zentralverriegelung, etc.)"
+        required
+        helperText="Bitte geben Sie die Serienausstattung zeilenweise ein"
+      />
       
       {/* Additional Features */}
       <div className="border-t border-gray-200 pt-6">
@@ -65,19 +58,14 @@ export function VehicleFeatures({ data, onChange }: VehicleFeaturesProps) {
           {AVAILABLE_FEATURES.map(feature => (
             <div
               key={feature.id}
-              className="flex items-center space-x-3 p-4 bg-white rounded-lg border border-gray-100"
+              className="p-4 bg-white rounded-lg border border-gray-100"
             >
               <Checkbox
                 id={feature.id}
+                label={feature.label}
                 checked={data.features.includes(feature.id)}
-                onChange={(checked) => handleFeatureToggle(feature.id, checked)}
+                onChange={(e) => handleFeatureToggle(feature.id, e.target.checked)}
               />
-              <label
-                htmlFor={feature.id}
-                className="text-sm font-medium text-gray-900 cursor-pointer"
-              >
-                {feature.label}
-              </label>
             </div>
           ))}
         </div>

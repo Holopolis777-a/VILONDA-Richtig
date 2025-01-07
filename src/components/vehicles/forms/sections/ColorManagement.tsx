@@ -1,14 +1,62 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
-import { Input } from '../../../ui/Input';
-import { Select } from '../../../ui/Select';
-import { Button } from '../../../ui/Button';
+import { Input, Select, Button, type Option } from '../../../../components/core';
 import type { VehicleColor, VehicleFormData } from '../../../../types/vehicle';
 
 interface ColorManagementProps {
   data: VehicleFormData;
   onChange: (data: Partial<VehicleFormData>) => void;
 }
+
+interface ColorCardProps {
+  color: VehicleColor;
+  isSelected: boolean;
+  onSelect: () => void;
+  onRemove: () => void;
+}
+
+function ColorCard({ color, isSelected, onSelect, onRemove }: ColorCardProps) {
+  return (
+    <div
+      className={`flex items-center space-x-4 p-4 bg-white rounded-lg border transition-colors cursor-pointer ${
+        isSelected ? 'border-primary-600 ring-1 ring-primary-500' : 'border-gray-200 hover:border-gray-300'
+      }`}
+      onClick={onSelect}
+    >
+      <div
+        className="w-8 h-8 rounded-full border border-gray-200 shadow-inner"
+        style={{ backgroundColor: color.code }}
+      />
+      <div className="flex-1">
+        <div className="font-medium text-gray-900">{color.name}</div>
+        <div className="text-sm text-gray-500">
+          {color.type === 'solid' ? 'Uni-Lackierung' : 
+           color.type === 'metallic' ? 'Metallic-Lackierung' : 
+           'Perleffekt-Lackierung'}
+          {color.price ? ` • +${color.price.toFixed(2)}€` : ''}
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        className="opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
+
+const COLOR_TYPES: Option[] = [
+  { value: 'solid', label: 'Uni-Lackierung' },
+  { value: 'metallic', label: 'Metallic-Lackierung' },
+  { value: 'pearl', label: 'Perleffekt-Lackierung' }
+];
 
 export function ColorManagement({ data, onChange }: ColorManagementProps) {
   const [newColor, setNewColor] = React.useState<VehicleColor>({
@@ -59,35 +107,13 @@ export function ColorManagement({ data, onChange }: ColorManagementProps) {
       {data.availableColors?.length > 0 && (
         <div className="grid gap-4 mb-6">
           {data.availableColors.map((color, index) => (
-            <div
+            <ColorCard
               key={index}
-              className={`flex items-center space-x-4 p-4 bg-white rounded-lg border ${
-                data.color === color.name ? 'border-gray-900' : 'border-gray-200'
-              }`}
-              onClick={() => handleSelectColor(color.name)}
-            >
-              <div
-                className="w-8 h-8 rounded-full border border-gray-200"
-                style={{ backgroundColor: color.code }}
-              />
-              <div className="flex-1">
-                <div className="font-medium">{color.name}</div>
-                <div className="text-sm text-gray-500">
-                  {color.type.charAt(0).toUpperCase() + color.type.slice(1)}
-                  {color.price ? ` • +${color.price.toFixed(2)}€` : ''}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveColor(index);
-                }}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+              color={color}
+              isSelected={data.color === color.name}
+              onSelect={() => handleSelectColor(color.name)}
+              onRemove={() => handleRemoveColor(index)}
+            />
           ))}
         </div>
       )}
@@ -109,15 +135,14 @@ export function ColorManagement({ data, onChange }: ColorManagementProps) {
         <Select
           label="Typ"
           value={newColor.type}
-          onChange={(e) => setNewColor({ ...newColor, type: e.target.value as 'solid' | 'metallic' | 'pearl' })}
-        >
-          <option value="solid">Uni-Lackierung</option>
-          <option value="metallic">Metallic-Lackierung</option>
-          <option value="pearl">Perleffekt-Lackierung</option>
-        </Select>
+          options={COLOR_TYPES}
+          onChange={(value) => setNewColor({ ...newColor, type: value as VehicleColor['type'] })}
+        />
         <Input
           type="number"
           label="Aufpreis (€)"
+          min={0}
+          step="0.01"
           value={newColor.price || ''}
           onChange={(e) => setNewColor({ ...newColor, price: Number(e.target.value) })}
           placeholder="0.00"
@@ -127,9 +152,9 @@ export function ColorManagement({ data, onChange }: ColorManagementProps) {
             type="button"
             onClick={handleAddColor}
             disabled={!newColor.name || !newColor.code}
-            className="w-full"
+            fullWidth
+            startIcon={<Plus className="w-4 h-4" />}
           >
-            <Plus className="w-4 h-4 mr-2" />
             Farbe hinzufügen
           </Button>
         </div>

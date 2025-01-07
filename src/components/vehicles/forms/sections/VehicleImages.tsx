@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageUpload } from '../../ImageUpload';
+import { ImageUpload } from '../../../../components/core';
 
 interface VehicleImagesProps {
   images: string[];
@@ -15,10 +15,8 @@ export function VehicleImages({ images, onChange }: VehicleImagesProps) {
         onUpload={onChange}
         maxFiles={5}
         acceptedFileTypes={['image/jpeg', 'image/png']}
+        helperText="Laden Sie bis zu 5 Bilder hoch. Erlaubte Formate: JPG, PNG"
       />
-      <p className="text-sm text-gray-500">
-        Laden Sie bis zu 5 Bilder hoch. Erlaubte Formate: JPG, PNG
-      </p>
     </div>
   );
 }

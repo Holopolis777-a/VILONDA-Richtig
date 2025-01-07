@@ -1,4 +1,6 @@
 import React from 'react';
+import { Card, CardContent } from '../../../components/core';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 interface SalaryStatementBasicInfoProps {
   taxClass: string;
@@ -6,25 +8,45 @@ interface SalaryStatementBasicInfoProps {
   distanceToWork: number;
 }
 
+interface InfoItemProps {
+  label: string;
+  value: React.ReactNode;
+}
+
+function InfoItem({ label, value }: InfoItemProps) {
+  return (
+    <div>
+      <div className="text-sm font-medium text-gray-600">{label}</div>
+      <div className="text-lg font-medium text-gray-900">{value}</div>
+    </div>
+  );
+}
+
 export function SalaryStatementBasicInfo({ 
   taxClass, 
   churchTax, 
   distanceToWork 
 }: SalaryStatementBasicInfoProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="bg-green-100 p-4 rounded-lg grid grid-cols-3 gap-4">
-      <div>
-        <div className="text-sm font-medium">Steuerklasse</div>
-        <div className="text-lg">{taxClass}</div>
-      </div>
-      <div>
-        <div className="text-sm font-medium">Kirchensteuer</div>
-        <div className="text-lg">{churchTax ? "Ja" : "Nein"}</div>
-      </div>
-      <div>
-        <div className="text-sm font-medium">Arbeitsweg in KM</div>
-        <div className="text-lg">{distanceToWork}</div>
-      </div>
-    </div>
+    <Card className="bg-primary-50">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-3 gap-4">
+          <InfoItem 
+            label={t('Steuerklasse')}
+            value={taxClass}
+          />
+          <InfoItem 
+            label={t('Kirchensteuer')}
+            value={churchTax ? t('Ja') : t('Nein')}
+          />
+          <InfoItem 
+            label={t('Arbeitsweg in KM')}
+            value={distanceToWork}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

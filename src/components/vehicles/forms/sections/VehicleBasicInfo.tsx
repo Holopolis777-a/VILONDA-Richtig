@@ -1,12 +1,19 @@
 import React from 'react';
-import { Input } from '../../../ui/Input';
-import { Select } from '../../../ui/Select';
+import { Input, Select, type Option } from '../../../../components/core';
 import type { VehicleFormData } from '../../../../types/vehicle';
 
 interface VehicleBasicInfoProps {
   data: VehicleFormData;
   onChange: (data: Partial<VehicleFormData>) => void;
 }
+
+const vehicleTypeOptions: Option[] = [
+  { value: 'limousine', label: 'Limousine' },
+  { value: 'kombi', label: 'Kombi' },
+  { value: 'suv', label: 'SUV' },
+  { value: 'coupe', label: 'Coupé' },
+  { value: 'cabrio', label: 'Cabriolet' }
+];
 
 export function VehicleBasicInfo({ data, onChange }: VehicleBasicInfoProps) {
   return (
@@ -78,15 +85,10 @@ export function VehicleBasicInfo({ data, onChange }: VehicleBasicInfoProps) {
         <Select
           label="Fahrzeugtyp *"
           value={data.type}
-          onChange={(e) => onChange({ type: e.target.value })}
+          options={vehicleTypeOptions}
+          onChange={(value) => onChange({ type: value.toString() })}
           required
-        >
-          <option value="limousine">Limousine</option>
-          <option value="kombi">Kombi</option>
-          <option value="suv">SUV</option>
-          <option value="coupe">Coupé</option>
-          <option value="cabrio">Cabriolet</option>
-        </Select>
+        />
       </div>
     </div>
   );
