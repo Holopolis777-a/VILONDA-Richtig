@@ -16,8 +16,6 @@ interface PoolVehicleState {
   deleteVehicle: (id: string) => Promise<void>;
   setSelectedVehicle: (vehicle: PoolVehicle | null) => void;
   
-  setSelectedVehicle: (vehicle: PoolVehicle | null) => void;
-  
   // Pool-specific actions
   assignVehicle: (vehicleId: string, userId: string) => Promise<void>;
   returnVehicle: (vehicleId: string) => Promise<void>;
